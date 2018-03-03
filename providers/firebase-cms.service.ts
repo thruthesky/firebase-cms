@@ -25,7 +25,7 @@ export class FirebaseCmsService {
   }
 
   initializeFirebase(config) {
-    this.firebaseApp = firebase.initializeApp(FirebaseCmsService.config);
+    this.firebaseApp = firebase.initializeApp(config);
     this.afAuth = new AngularFireAuth(<any>this.firebaseApp);
     this.initializeFirebaseAuthentication();
   }
