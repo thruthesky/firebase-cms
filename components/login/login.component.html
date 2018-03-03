@@ -1,0 +1,60 @@
+<section class="login">
+
+    <div *ngIf=" ! cms.isLogin ">
+  
+      <div>
+        <button (click)="onClickGoogleLogin()">Google Login</button>
+        <button (click)="onClickGoogleLogin()">Facebook Login</button>
+      </div>
+  
+  
+  
+      <div>
+        <form #loginForm (ngSubmit)=" onLoginFormSubmit( $event, loginForm ) ">
+          <div>
+            <label>Email:</label>
+            <span>
+              <input type="email" name="email" [(ngModel)]="email">
+            </span>
+          </div>
+          <div>
+            <label>Password:</label>
+            <span>
+              <input type="password" name="password" [(ngModel)]="password">
+            </span>
+          </div>
+          <div *ngIf=" mode == 'login' ">
+            <button type="submit">Login</button>
+            <button type="button" (click)=" mode = 'register' ">Or Register</button>
+          </div>
+  
+          <ng-container *ngIf=" mode == 'register' ">
+              <div>
+                <label>Name:</label>
+                <span>
+                  <input type="text" name="name" [(ngModel)]="name">
+                </span>
+              </div>
+              <div>
+                <label>Mobile No.:</label>
+                <span>
+                  <input type="number" name="mobile" [(ngModel)]="mobile">
+                </span>
+              </div>
+            <button type="submit">Register</button>
+            <button type="button" (click)=" mode = 'login' ">Cancel</button>
+          </ng-container>
+  
+        </form>
+      </div>
+  
+  
+  
+    </div>
+    <div *ngIf=" cms.isLogin ">
+      <h2>Hello {{ cms.userDisplayName }}!</h2>
+      <button (click)=" onClickLogout() ">Logout</button>
+    </div>
+  
+  </section>
+  
