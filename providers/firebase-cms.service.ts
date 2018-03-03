@@ -24,6 +24,7 @@ export class FirebaseCmsService {
     console.log("Firebase Cms Service runs...");
   }
 
+
   initializeFirebase(config) {
     this.firebaseApp = firebase.initializeApp(config);
     this.afAuth = new AngularFireAuth(<any>this.firebaseApp);
@@ -60,7 +61,7 @@ export class FirebaseCmsService {
   }
 
   version() {
-    return '0.2.2';
+    return '0.2.12';
   }
 
   get userDisplayName(): string {

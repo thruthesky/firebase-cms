@@ -10,11 +10,19 @@
 
 
 * First add `Firebase CMS` submodule to a project.
+````
 $ git submodule add https://github.com/thruthesky/firebase-cms src/app/modules/firebase-cms
+````
 
+* Install dependencies
+````
+$ npm i firebase angularfire2
+$ npm i ng-packagr -D
+````
 
 * Then open the app module and add the following.
 ````
+import { environment } from '../environments/environment'; // You need to save firebase configuration in environment.ts
 import { FirebaseCmsModule, FirebaseCmsService } from './modules/firebase-cms/firebase-cms.module';
 @NgModule({
   imports: [
@@ -29,4 +37,36 @@ export class AppModule {
 ````
 
 * If you want to publish update version of `Firebase CMS` as node module, please follow the instructions of [Ng-Packagr](https://github.com/dherges/ng-packagr)
+
+ * Update below in `package.json`
+
+````
+{
+  "name": "firebase-cms",
+  "version": "0.2.12",
+  "scripts": {
+    "pack": "ng-packagr -p package.json"
+  },
+  "private": false,
+  "ngPackage": {
+    "lib": {
+      "entryFile": "public_api.ts"
+    }
+  }
+}
+````
+
+ * save below in `public_api.ts`
+````
+export * from './src/app/modules/firebase-cms/firebase-cms.module';
+````
+
+ * compile with `npm run pack`
+
+ * distribute with `npm publish dist`
+
+
+
+
+
 
