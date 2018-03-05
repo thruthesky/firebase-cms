@@ -3,18 +3,26 @@ import * as firebase from 'firebase';
 import { FirebaseCmsService } from './../../providers/firebase-cms.service';
 import { Form } from '@angular/forms';
 
+
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html'
+  selector: 'app-cms-user',
+  templateUrl: './user.component.html'
 })
-export class LoginComponent {
+export class UserComponent {
 
   email: string = null;
   password: string = null;
   mobile: number = null;
   name: string = null;
 
-  mode: 'login' | 'register' = 'login';
+  // mode: 'login' | 'register' = 'login';
+  show: {
+    register: false;
+    profile: boolean;
+  } = {
+      register: false,
+      profile: false
+    };
 
   @Output() login = new EventEmitter<void>();
   constructor(public cms: FirebaseCmsService) {
@@ -35,11 +43,30 @@ export class LoginComponent {
 
 
   onClickLogout() {
-    this.cms.afAuth.auth.signOut();
+    this.cms.logout();
   }
+
+
+  onProfileUpdateFormSubmit(event: Event, form) {
+    event.preventDefault();
+    this.cms.profileUpdate({
+      name: this.name,
+      mobile: this.mobile,
+      debug: true
+    }).then( re => {
+      console.log(re);
+    }).catch( e => {
+      console.log("Caught: ", e instanceof Error);
+      console.error(e);
+      alert( e.message );
+    });
+    return false;
+  }
+
+
   onLoginFormSubmit(event: Event, form) {
     event.preventDefault();
-    if (this.mode === 'login') {
+    if (this.show.register === false) {
       this.onClickLogin();
     }
     else {
@@ -52,6 +79,9 @@ export class LoginComponent {
     this.cms.login(this.email, this.password)
       .then(re => {
         console.log("onClickLogin() => cms.login() => re: ", re);
+      })
+      .catch(e => {
+        alert(e.message);
       });
   }
   onClickRegister() {

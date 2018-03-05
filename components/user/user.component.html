@@ -1,0 +1,79 @@
+<section class="login">
+
+  <div *ngIf=" ! cms.isLogin ">
+
+    <div>
+      <button (click)="onClickGoogleLogin()">Google Login</button>
+    </div>
+
+
+
+    <div>
+      <form #loginForm (ngSubmit)=" onLoginFormSubmit( $event, loginForm ) ">
+        <div>
+          <label>Email:</label>
+          <span>
+            <input type="email" name="email" [(ngModel)]="email">
+          </span>
+        </div>
+        <div>
+          <label>Password:</label>
+          <span>
+            <input type="password" name="password" [(ngModel)]="password">
+          </span>
+        </div>
+        <div *ngIf=" ! show.register ">
+          <button type="submit">Login</button>
+          <button type="button" (click)=" show.register = true ">Or Register</button>
+        </div>
+
+        <ng-container *ngIf=" show.register ">
+          <div>
+            <label>Name:</label>
+            <span>
+              <input type="text" name="name" [(ngModel)]="name">
+            </span>
+          </div>
+          <div>
+            <label>Mobile No.:</label>
+            <span>
+              <input type="number" name="mobile" [(ngModel)]="mobile">
+            </span>
+          </div>
+          <button type="submit">Register</button>
+          <button type="button" (click)=" show.register = false ">Cancel</button>
+        </ng-container>
+
+      </form>
+    </div>
+
+  </div>
+
+  <div *ngIf=" cms.isLogin ">
+    <h2>Hello {{ cms.userDisplayName }}!</h2>
+    <div>
+      <button (click)=" show.profile = true ">Update Profile</button>
+      <button (click)=" onClickLogout() ">Logout</button>
+    </div>
+    <div *ngIf=" show.profile ">
+      <h3>Profile Update</h3>
+      <form #profileForm (ngSubmit)=" onProfileUpdateFormSubmit( $event, profileForm ) ">
+        <div>
+          <label>Name:</label>
+          <span>
+            <input type="text" name="name" [(ngModel)]="name">
+          </span>
+        </div>
+        <div>
+          <label>Mobile No.:</label>
+          <span>
+            <input type="number" name="mobile" [(ngModel)]="mobile">
+          </span>
+        </div>
+        <button type="submit">UPDATE</button>
+        <button type="button" (click)=" show.profile = false ">Cancel</button>
+      </form>
+    </div>
+  </div>
+
+</section>

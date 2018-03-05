@@ -12,13 +12,16 @@ import { AngularFireAuthModule, AngularFireAuth } from 'angularfire2/auth';
 
 import { FirebaseCmsService } from './providers/firebase-cms.service';
 export * from './providers/firebase-cms.service';
+import { UnitTestService } from './providers/unit-test.service';
+export * from './providers/unit-test.service';
 
-import { LoginComponent } from './components/login/login.component';
-export * from './components/login/login.component';
+
+import { UserComponent } from './components/user/user.component';
+export * from './components/user/user.component';
 
 @NgModule({
   declarations: [
-    LoginComponent
+    UserComponent
   ],
   imports: [
     CommonModule,
@@ -26,11 +29,12 @@ export * from './components/login/login.component';
     HttpClientModule
   ],
   exports: [
-    LoginComponent
+    UserComponent
   ],
   providers: [
     HttpClient,
-    FirebaseCmsService
+    FirebaseCmsService,
+    UnitTestService
   ]
 })
 

@@ -6,6 +6,18 @@ import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/map';
 
 
+export interface BACKEND_ERROR_OBJECT {
+  code: number;
+  message?: string;
+}
+
+export interface ROUTER_RESPONSE extends BACKEND_ERROR_OBJECT {
+  route: string;
+  data?: any;
+}
+
+
+
 @Injectable()
 export class FirebaseCmsService {
 
@@ -24,9 +36,19 @@ export class FirebaseCmsService {
     console.log("Firebase Cms Service runs...");
   }
 
+  /**
+   * It initialize the CMS with the configuration.
+   * @param config Backend configuration
+   *      config['firebase'] is the firebase configuration.
+   *      config['api'] is the function api url.
+   */
+  initialize(config: { firebase: any, api: string }) {
+    this.apiUrl = config.api;
+    this.firebaseApp = this.firebaseApp = firebase.initializeApp(config.firebase);
+    this.initializeFirebase();
+  }
 
-  initializeFirebase(config) {
-    this.firebaseApp = firebase.initializeApp(config);
+  initializeFirebase() {
     this.afAuth = new AngularFireAuth(<any>this.firebaseApp);
     this.initializeFirebaseAuthentication();
   }
@@ -50,22 +72,25 @@ export class FirebaseCmsService {
         user.getIdToken().then(x => this.updateIdToken(x)).catch(e => e);
       }
     });
+  }
 
-  }
-  setFirebaseFunctionsApi(url: string) {
-    this.apiUrl = url;
-  }
-  updateIdToken(idToken) {
-    console.log('ID Token: ', idToken);
+
+
+  updateIdToken(idToken: string) {
+    console.log('updateIdToken: idToken.length: ', idToken.length);
+    // console.log('ID Token: ', idToken);
     this.idToken = idToken;
   }
 
-  version() {
-    return '0.2.12';
-  }
+
+
 
   get userDisplayName(): string {
     return this.afAuth.auth.currentUser.displayName;
+  }
+
+  version(): Promise<ROUTER_RESPONSE> {
+    return this.route({ route: 'user.version' });
   }
 
   userSet(data) {
@@ -74,10 +99,16 @@ export class FirebaseCmsService {
     // });
   }
 
-  login(email, password): Promise<any> {
+  login(email, password): Promise<ROUTER_RESPONSE> {
     return this.afAuth.auth.signInWithEmailAndPassword(email, password);
   }
-  register(data): Promise<any> {
+
+  logout(): Promise<void> {
+    this.idToken = null;
+    return this.afAuth.auth.signOut();
+  }
+
+  registerWithAuthentication(data): Promise<ROUTER_RESPONSE> {
     return this.afAuth.auth.createUserWithEmailAndPassword(data.email, data.password)
       .then((user: firebase.User) => {
         return user.getIdToken();
@@ -85,34 +116,94 @@ export class FirebaseCmsService {
       .then((idToken) => { // 이 (JWT) 토큰을 서버로 전송하면 된다.
         // console.log('ID Token: ', idToken);
         this.idToken = idToken;
-
-        // let url = this.apiUrl + '?route=user.set&idToken=' + this.idToken;
-        // url += '&name=' + data.name;
-        // url += '&mobile=' + data.mobile;
-        // console.log('url: ', url);
-        // return url;
-
         const profile = {
           route: 'user.set',
           idToken: idToken,
           name: data.name,
           mobile: data.mobile
         };
-
-        return profile;
+        return this.route(profile);
       })
       // .then(url => {
       //   return this.http.get(url).toPromise();
       // })
-      .then(profile => {
-        console.log("then: profile: ", profile);
-        return this.http.post(this.apiUrl, profile)
-          // .map(x => x )
-          .toPromise();
-      })
+      // .then( (profile): any => {
+      //   console.log("then: profile: ", profile);
+      //   return this.http.post(this.apiUrl, profile)
+      //     // .map(x => x )
+      //     .toPromise();
+      // })
       .catch(error => {
         console.log(error);
       });
+  }
+
+  register(data): Promise<ROUTER_RESPONSE> {
+
+    data['route'] = 'user.register';
+    return this.route(data);
 
   }
+
+  profileUpdate(data): Promise<ROUTER_RESPONSE> {
+    data['route'] = 'user.update';
+    data['idToken'] = this.idToken;
+    return this.route(data);
+  }
+
+
+
+  /**
+   * Request to `firebase functions` and returns the response.
+   *
+   * @desc If there is error, the `BACKEND_ERROR_RESPONSE` object will be returned instead of `Error` object.
+   *      This is important when you handle error.
+   * @param data request data
+   */
+  route(data): Promise<any> {
+    if (!this.apiUrl) {
+      return Promise.reject(new Error('apiUrl is empty. It should have backend server URL.'));
+      // Promise.throw('apiUrl is empty. It should have backend server URL.');
+      // throw new Error('apiUrl is empty. It should have backend server URL.');
+    }
+    if (data['debug'] !== void 0 && data['debug'] === true) {
+      delete data['debug'];
+      const url = this.apiUrl + '?' + this.httpBuildQuery(data);
+      console.log("debug: route() request url: ", url);
+    }
+    return this.http.post(this.apiUrl, data).toPromise()
+      .then((re: ROUTER_RESPONSE) => {
+        if (re.code === void 0) {
+          throw new Error('Failed to get response from server. Error code: -1');
+        }
+        else if (re.code) {
+          // console.log("re: ", re);
+          throw re;
+        }
+        else {
+          return re;
+        }
+      });
+  }
+
+
+  /**
+     * Returns http query string.
+     * @param params Object to build as http query string
+     * @return
+     *      - http query string
+     *      - Or null if the input is emtpy or not object.
+     */
+  httpBuildQuery(params): string | null {
+    const keys = Object.keys(params);
+    if (keys.length === 0) {
+      return null;
+    }
+    const esc = encodeURIComponent;
+    const query = keys
+      .map(k => esc(k) + '=' + esc(params[k]))
+      .join('&');
+    return query;
+  }
+
 }
