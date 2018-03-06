@@ -19,9 +19,14 @@ export * from './providers/unit-test.service';
 import { UserComponent } from './components/user/user.component';
 export * from './components/user/user.component';
 
+import { InstallComponent } from './components/install/install.component';
+export * from './components/install/install.component';
+
+
 @NgModule({
   declarations: [
-    UserComponent
+    UserComponent,
+    InstallComponent
   ],
   imports: [
     CommonModule,
@@ -29,7 +34,8 @@ export * from './components/user/user.component';
     HttpClientModule
   ],
   exports: [
-    UserComponent
+    UserComponent,
+    InstallComponent
   ],
   providers: [
     HttpClient,
@@ -40,8 +46,11 @@ export * from './components/user/user.component';
 
 
 export class FirebaseCmsModule {
-  // public static forRoot(config): ModuleWithProviders {
-  //   FirebaseCmsService.config = config;
-  //   return { ngModule: FirebaseCmsModule, providers: [] };
-  // }
+  public static forRoot(config: { firebase: any, api: string }): ModuleWithProviders {
+    FirebaseCmsService.config = config;
+    return {
+      ngModule: FirebaseCmsModule,
+      providers: [ FirebaseCmsService, UnitTestService ],
+    };
+  }
 }

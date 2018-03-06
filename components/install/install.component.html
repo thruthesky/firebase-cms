@@ -1,0 +1,18 @@
+<section class="install">
+
+  <h1>Installation</h1>
+
+  <div>
+    <form #loginForm (ngSubmit)=" onInstallFormSubmit( $event, loginForm ) ">
+      <div>
+        <label>Admin Email:</label>
+        <span>
+          <input type="email" name="email" [(ngModel)]="email">
+        </span>
+      </div>
+    </form>
+  </div>
+
+
+</section>
+

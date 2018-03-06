@@ -5,16 +5,9 @@ import * as firebase from 'firebase';
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/map';
 
+import { BACKEND_ERROR_OBJECT } from './error';
+import { ROUTER_RESPONSE } from './defines';
 
-export interface BACKEND_ERROR_OBJECT {
-  code: number;
-  message?: string;
-}
-
-export interface ROUTER_RESPONSE extends BACKEND_ERROR_OBJECT {
-  route: string;
-  data?: any;
-}
 
 
 
@@ -34,6 +27,9 @@ export class FirebaseCmsService {
     public http: HttpClient
   ) {
     console.log("Firebase Cms Service runs...");
+
+
+    if ( FirebaseCmsService.config ) this.initialize( FirebaseCmsService.config );
   }
 
   /**
@@ -89,8 +85,8 @@ export class FirebaseCmsService {
     return this.afAuth.auth.currentUser.displayName;
   }
 
-  version(): Promise<ROUTER_RESPONSE> {
-    return this.route({ route: 'user.version' });
+  version(debug: boolean = false): Promise<ROUTER_RESPONSE> {
+    return this.route({ route: 'user.version', debug: debug });
   }
 
   userSet(data) {
@@ -177,7 +173,9 @@ export class FirebaseCmsService {
 
 
   /**
-   * Request to `firebase functions` and returns the response.
+   * Request to `Firebase Functions` and returns the response.
+   * 
+   * @desc All request must be done through this method.
    *
    * @desc If there is error, the `BACKEND_ERROR_RESPONSE` object will be returned instead of `Error` object.
    *      This is important when you handle error.
@@ -196,16 +194,21 @@ export class FirebaseCmsService {
     }
     return this.http.post(this.apiUrl, data).toPromise()
       .then((re: ROUTER_RESPONSE) => {
-        if (re.code === void 0) {
+        if (re.code === void 0) { /// No response from backend. Maybe Javascript error / Network error.
           throw { code: -1, message: 'Failed to get response from server' };
         }
-        else if (re.code) {
-          // console.log("re: ", re);
+        else if (re.code) { /// Backend error response.
           throw re;
         }
         else {
           return re;
         }
+      })
+      .then( re => {
+        if ( re.installed !== void 0 && re.installed === false ) {
+          alert("The system is not installed. Please install now.");
+        }
+        return re;
       });
   }
 

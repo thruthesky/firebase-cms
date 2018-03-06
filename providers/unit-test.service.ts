@@ -9,7 +9,7 @@
 import { Injectable } from '@angular/core';
 import { FirebaseCmsService } from './firebase-cms.service';
 import * as _ from 'lodash';
-import * as E from './../error';
+import * as E from './error';
 
 
 @Injectable()
@@ -57,7 +57,7 @@ export class UnitTestService {
     }
 
     versionTests() {
-        this.cms.version()
+        this.cms.version(true)
             .then(re => {
                 console.log("re: ", re);
                 this.test(re.code === 0 && _.isString(re.data), `Version: ${re.data}`);
@@ -128,7 +128,6 @@ export class UnitTestService {
                 this.test( re.code === 0, 'Expect success on get user data', re);
             })
             .catch(e => this.failure('Expect success: ', e.code, e.message));
-
     }
 
 }
