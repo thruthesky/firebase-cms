@@ -99,7 +99,15 @@ export class FirebaseCmsService {
     // });
   }
 
-  login(email, password): Promise<ROUTER_RESPONSE> {
+  /**
+   * Returns the same return value of `auth.signInWithEmailAndPassword()`
+   * @desc It does not return `backend server response`.
+   * @param email user email
+   * @param password user passowrd
+   *
+   * @return `Firebase` Promise.
+   */
+  login(email, password): Promise<firebase.User> {
     return this.afAuth.auth.signInWithEmailAndPassword(email, password);
   }
 
@@ -108,6 +116,10 @@ export class FirebaseCmsService {
     return this.afAuth.auth.signOut();
   }
 
+  /**
+   * Returns a Promise of `ROUTER_REPONSE` or Firebase Error Object.
+   * @param data User data to resiter with Email/Password on Authentication.
+   */
   registerWithAuthentication(data): Promise<ROUTER_RESPONSE> {
     return this.afAuth.auth.createUserWithEmailAndPassword(data.email, data.password)
       .then((user: firebase.User) => {
@@ -124,31 +136,42 @@ export class FirebaseCmsService {
         };
         return this.route(profile);
       })
-      // .then(url => {
-      //   return this.http.get(url).toPromise();
-      // })
-      // .then( (profile): any => {
-      //   console.log("then: profile: ", profile);
-      //   return this.http.post(this.apiUrl, profile)
-      //     // .map(x => x )
-      //     .toPromise();
-      // })
-      .catch(error => {
-        console.log(error);
+      .catch(e => {
+        console.log(e);
+        return e;
       });
   }
 
+  /**
+   * Returns server response after register.
+   * @param data User data to create `Firebase Authentication` and set Document on `user collection`
+   *
+   * @desc It does not log after registration since it may get a complicated code. Simple is the best!
+   */
   register(data): Promise<ROUTER_RESPONSE> {
 
     data['route'] = 'user.register';
     return this.route(data);
-
+    // .then(re => {
+    //   return this.login(data.email, data.password);
+    // })
+    // .then((user: firebase.User) => {
+    //   return { code: 0, data: user.uid, route: 'user.register' };
+    // });
   }
 
   profileUpdate(data): Promise<ROUTER_RESPONSE> {
     data['route'] = 'user.update';
     data['idToken'] = this.idToken;
     return this.route(data);
+  }
+
+  getUserData(): Promise<ROUTER_RESPONSE> {
+    const data = {
+      route: 'user.get',
+      idToken: this.idToken
+    };
+    return this.route( data );
   }
 
 
@@ -160,7 +183,7 @@ export class FirebaseCmsService {
    *      This is important when you handle error.
    * @param data request data
    */
-  route(data): Promise<any> {
+  route(data): Promise<ROUTER_RESPONSE> {
     if (!this.apiUrl) {
       return Promise.reject(new Error('apiUrl is empty. It should have backend server URL.'));
       // Promise.throw('apiUrl is empty. It should have backend server URL.');
@@ -174,7 +197,7 @@ export class FirebaseCmsService {
     return this.http.post(this.apiUrl, data).toPromise()
       .then((re: ROUTER_RESPONSE) => {
         if (re.code === void 0) {
-          throw new Error('Failed to get response from server. Error code: -1');
+          throw { code: -1, message: 'Failed to get response from server' };
         }
         else if (re.code) {
           // console.log("re: ", re);
