@@ -53,12 +53,12 @@ export class UserComponent {
       name: this.name,
       mobile: this.mobile,
       debug: true
-    }).then( re => {
+    }).then(re => {
       console.log(re);
-    }).catch( e => {
+    }).catch(e => {
       console.log("Caught: ", e instanceof Error);
       console.error(e);
-      alert( e.message );
+      alert(e.message);
     });
     return false;
   }
@@ -93,6 +93,10 @@ export class UserComponent {
     })
       .then(re => {
         console.log('cms.register() => then: ', re);
+        return this.cms.login(this.email, this.password);
+      })
+      .then(re => {
+        console.log('login: ', re);
       });
 
 

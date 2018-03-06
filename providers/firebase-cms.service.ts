@@ -74,7 +74,7 @@ export class FirebaseCmsService {
 
   updateIdToken(idToken: string) {
     console.log('updateIdToken: idToken.length: ', idToken.length);
-    // console.log('ID Token: ', idToken);
+    console.log('ID Token: ', idToken);
     this.idToken = idToken;
   }
 
@@ -206,7 +206,9 @@ export class FirebaseCmsService {
       })
       .then( re => {
         if ( re.installed !== void 0 && re.installed === false ) {
-          alert("The system is not installed. Please install now.");
+          const msg = "The system is not installed. Please install now.";
+          // alert(msg);
+          console.error(msg);
         }
         return re;
       });

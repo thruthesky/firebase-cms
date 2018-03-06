@@ -7,9 +7,9 @@
  *
  */
 import { Injectable } from '@angular/core';
-import { FirebaseCmsService } from './firebase-cms.service';
 import * as _ from 'lodash';
-import * as E from './error';
+import * as E from './../providers/error';
+import { FirebaseCmsService } from './../sdk';
 
 
 @Injectable()
