@@ -98,8 +98,6 @@ export class UserComponent {
       .then(re => {
         console.log('login: ', re);
       });
-
-
   }
 
 }
