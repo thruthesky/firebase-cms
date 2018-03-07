@@ -10,6 +10,21 @@ import { ROUTER_RESPONSE } from './defines';
 
 
 
+/**
+ * Interface for Configuration
+ */
+export interface FIREBASE_CMS_SERVICE_CONFIG {
+  firebase: any;
+  apiUrl: string;
+
+  // If it is set to true, then it will not alert a message when the backend is not installed.
+  // It will log error with `console.error()`
+  disableAlertOnNotInstall?: boolean;
+
+  // If it is set to true, it will log the request URL to `Functions` in console
+  // Use it for debugging in development.
+  logRequestUrl?: boolean;
+}
 
 @Injectable()
 export class FirebaseCmsService {
@@ -29,8 +44,14 @@ export class FirebaseCmsService {
     console.log("Firebase Cms Service runs...");
 
 
-    if ( FirebaseCmsService.config ) this.initialize( FirebaseCmsService.config );
+    if (FirebaseCmsService.config) this.initialize(FirebaseCmsService.config);
   }
+
+  get config(): FIREBASE_CMS_SERVICE_CONFIG {
+    return FirebaseCmsService.config;
+  }
+
+
 
   /**
    * It initialize the CMS with the configuration.
@@ -38,8 +59,8 @@ export class FirebaseCmsService {
    *      config['firebase'] is the firebase configuration.
    *      config['api'] is the function api url.
    */
-  initialize(config: { firebase: any, api: string }) {
-    this.apiUrl = config.api;
+  initialize(config: FIREBASE_CMS_SERVICE_CONFIG) {
+    this.apiUrl = config.apiUrl;
     this.firebaseApp = this.firebaseApp = firebase.initializeApp(config.firebase);
     this.initializeFirebase();
   }
@@ -167,10 +188,15 @@ export class FirebaseCmsService {
       route: 'user.get',
       idToken: this.idToken
     };
-    return this.route( data );
+    return this.route(data);
   }
 
 
+  logUrl(data) {
+    delete data['debug'];
+    const url = this.apiUrl + '?' + this.httpBuildQuery(data);
+    console.log("Request Url: ", url);
+  }
 
   /**
    * Request to `Firebase Functions` and returns the response.
@@ -187,11 +213,13 @@ export class FirebaseCmsService {
       // Promise.throw('apiUrl is empty. It should have backend server URL.');
       // throw new Error('apiUrl is empty. It should have backend server URL.');
     }
-    if (data['debug'] !== void 0 && data['debug'] === true) {
-      delete data['debug'];
-      const url = this.apiUrl + '?' + this.httpBuildQuery(data);
-      console.log("debug: route() request url: ", url);
+    if (this.config.logRequestUrl) {
+      this.logUrl(data);
     }
+    if (data['debug'] !== void 0 && data['debug'] === true) {
+      this.logUrl(data);
+    }
+
     return this.http.post(this.apiUrl, data).toPromise()
       .then((re: ROUTER_RESPONSE) => {
         if (re.code === void 0) { /// No response from backend. Maybe Javascript error / Network error.
@@ -204,11 +232,15 @@ export class FirebaseCmsService {
           return re;
         }
       })
-      .then( re => {
-        if ( re.installed !== void 0 && re.installed === false ) {
+      .then(re => {
+        if (re.installed !== void 0 && re.installed === false) {
           const msg = "The system is not installed. Please install now.";
-          // alert(msg);
-          console.error(msg);
+          if (this.config.disableAlertOnNotInstall === true) {
+            console.error(msg);
+          }
+          else {
+            alert(msg);
+          }
         }
         return re;
       });
@@ -232,6 +264,24 @@ export class FirebaseCmsService {
       .map(k => esc(k) + '=' + esc(params[k]))
       .join('&');
     return query;
+  }
+
+
+
+  /**
+   * Returns server response.
+   * 
+   * @return
+   *    - `data` is set to true if the backend is installed.
+   *    - Otherwise, `data` will be false.
+   */
+  checkInstall(): Promise<ROUTER_RESPONSE> {
+    return this.route({ route: 'system.checkInstall' });
+  }
+
+  install( data ): Promise<ROUTER_RESPONSE> {
+    data['route'] = 'system.install';
+    return this.route( data );
   }
 
 }

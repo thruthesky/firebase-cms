@@ -1,4 +1,4 @@
-<section class="install">
+<section class="install" *ngIf=" !installed ">
 
   <h1>Installation</h1>
 
@@ -10,6 +10,7 @@
           <input type="email" name="email" [(ngModel)]="email">
         </span>
       </div>
+      <button type="submit">INSTALL</button>
     </form>
   </div>
 
