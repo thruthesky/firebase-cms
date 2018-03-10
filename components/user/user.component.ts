@@ -26,12 +26,11 @@ export class UserComponent {
 
   @Output() login = new EventEmitter<void>();
   constructor(public cms: FirebaseCmsService) {
-    console.log(cms.afAuth);
   }
 
 
   onClickGoogleLogin() {
-    this.cms.afAuth.auth.signInWithPopup(new firebase.auth.GoogleAuthProvider())
+    this.cms.firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())
       .then(user => {
         console.log("Google login ok", user);
         this.login.emit();

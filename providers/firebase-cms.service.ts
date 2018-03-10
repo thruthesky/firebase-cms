@@ -1,16 +1,16 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import * as firebase from 'firebase';
+import "firebase/firestore";
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/map';
 
-import { AngularFireAuth } from 'angularfire2/auth';
-import { AngularFirestore, AngularFirestoreCollection } from 'angularfire2/firestore';
+
 import { Observable } from 'rxjs/Observable';
 
 import { BACKEND_ERROR_OBJECT } from './error';
 import { ROUTER_RESPONSE, CATEGORY, COLLECTIONS } from './defines';
-
+export const COLLECTION_PREFIX = 'x-';
 
 
 /**
@@ -35,22 +35,18 @@ export class FirebaseCmsService {
 
   static config = null;
 
-  firebaseApp: firebase.app.App;
+  firebase: firebase.app.App;
   apiUrl: string = null;
-  afAuth: AngularFireAuth = null;
-  afs: AngularFirestore = null;
   idToken: string = null;
 
   isLogin = false; // If true, the user has logged in.
 
+  db: firebase.firestore.Firestore;
+
 
 
   /// category
-  categoryCollection: AngularFirestoreCollection<CATEGORY>;
-  categories: Observable<CATEGORY[]>;
-
-
-
+  subscriptionCategories = null;
 
   ///
   constructor(
@@ -67,6 +63,10 @@ export class FirebaseCmsService {
   }
 
 
+  get collectionCategories() {
+    return COLLECTION_PREFIX + COLLECTIONS.CATEGORIES;
+  }
+
 
   /**
    * It initialize the CMS with the configuration.
@@ -76,26 +76,35 @@ export class FirebaseCmsService {
    */
   initialize(config: FIREBASE_CMS_SERVICE_CONFIG) {
     this.apiUrl = config.apiUrl;
-    this.firebaseApp = this.firebaseApp = firebase.initializeApp(config.firebase);
+    this.firebase = firebase.initializeApp(config.firebase);
+    
+
+    console.log('firebaase: ', this.firebase);
+
     this.initializeFirebase();
   }
 
   initializeFirebase() {
 
+    console.log(this.firebase.firestore());
+    this.db = this.firebase.firestore();
+
+
     /// post, category
-    this.afs = new AngularFirestore(<any>this.firebaseApp, true);
-    this.categoryCollection = this.afs.collection<CATEGORY>( COLLECTIONS.CATEGORIES );
+    // this.afs = new AngularFirestore(<any>this.firebaseApp, true);
+    // this.categoryCollection = this.afs.collection<CATEGORY>( COLLECTIONS.CATEGORIES );
 
 
     /// users
-    this.afAuth = new AngularFireAuth(<any>this.firebaseApp);
+    // this.afAuth = new AngularFireAuth(<any>this.firebaseApp);
     this.initializeFirebaseAuthentication();
   }
 
   initializeFirebaseAuthentication() {
 
+
     // When user authentication changes.
-    this.afAuth.auth.onAuthStateChanged(user => {
+    this.firebase.auth().onAuthStateChanged(user => {
       if (user) { // User is signed in.
         this.isLogin = true;
         user.getIdToken().then(x => this.updateIdToken(x)).catch(e => e);
@@ -106,7 +115,7 @@ export class FirebaseCmsService {
     });
 
     // User's ID Token changes.
-    this.afAuth.auth.onIdTokenChanged(user => {
+    this.firebase.auth().onIdTokenChanged(user => {
       if (user) {  // Check if user logged in
         user.getIdToken().then(x => this.updateIdToken(x)).catch(e => e);
       }
@@ -125,7 +134,7 @@ export class FirebaseCmsService {
 
 
   get userDisplayName(): string {
-    return this.afAuth.auth.currentUser.displayName;
+    return this.firebase.auth().currentUser.displayName;
   }
 
   version(debug: boolean = false): Promise<ROUTER_RESPONSE> {
@@ -147,12 +156,12 @@ export class FirebaseCmsService {
    * @return `Firebase` Promise.
    */
   login(email, password): Promise<firebase.User> {
-    return this.afAuth.auth.signInWithEmailAndPassword(email, password);
+    return this.firebase.auth().signInWithEmailAndPassword(email, password);
   }
 
   logout(): Promise<void> {
     this.idToken = null;
-    return this.afAuth.auth.signOut();
+    return this.firebase.auth().signOut();
   }
 
   /**
@@ -160,7 +169,7 @@ export class FirebaseCmsService {
    * @param data User data to resiter with Email/Password on Authentication.
    */
   registerWithAuthentication(data): Promise<ROUTER_RESPONSE> {
-    return this.afAuth.auth.createUserWithEmailAndPassword(data.email, data.password)
+    return this.firebase.auth().createUserWithEmailAndPassword(data.email, data.password)
       .then((user: firebase.User) => {
         return user.getIdToken();
       })
@@ -333,10 +342,25 @@ export class FirebaseCmsService {
   }
 
   /**
-   * @warning It saves the stream into `this.categories`. This means you can only use one categories stream through out the project.
+   * @warning It saves the stream into `this.subscriptionCategories`.
+   *          - This means you can only use one categories stream through out the project.
    */
-  categoryObserve() {
-    this.categories = this.categoryCollection.valueChanges();
-    return this.categories;
+  subscribeCategoryies() {
+    this.subscriptionCategories = this.db.collection( this.collectionCategories ).onSnapshot(snapshot => {
+      snapshot.docChanges.forEach(function (change) {
+        if (change.type === "added") {
+          console.log("New city: ", change.doc.data());
+        }
+        if (change.type === "modified") {
+          console.log("Modified city: ", change.doc.data());
+        }
+        if (change.type === "removed") {
+          console.log("Removed city: ", change.doc.data());
+        }
+      });
+    }, e => console.error(e));
+  }
+  unsubscribeCategories() {
+    this.subscriptionCategories();
   }
 }

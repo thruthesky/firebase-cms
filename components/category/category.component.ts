@@ -17,7 +17,7 @@ export class CategoryComponent {
         public cms: FirebaseCmsService
     ) {
 
-        cms.categoryObserve();
+        cms.subscribeCategoryies();
 
 
         

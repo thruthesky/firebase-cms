@@ -17,10 +17,10 @@ export * from './providers/firebase-cms.service';
     ]
 })
 export class FirebaseCmsModule {
-    public static forRoot(config: FIREBASE_CMS_SERVICE_CONFIG ): ModuleWithProviders {
-        
-            FirebaseCmsService.config = config;
-        
+    public static forRoot(config: FIREBASE_CMS_SERVICE_CONFIG): ModuleWithProviders {
+
+        FirebaseCmsService.config = config;
+
         return {
             ngModule: FirebaseCmsModule,
             providers: [FirebaseCmsService],
