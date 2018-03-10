@@ -1,9 +1,21 @@
 <h2>Category Management</h2>
+<form (ngSubmit)=" onCategoryCreateFormSubmit( $event ) ">
 
-Category ID: <input><button>Create a Category</button>
+  <div>Category ID: <input name="id" [(ngModel)]="form.id"></div>
+  <div>Category Name: <input name="name" [(ngModel)]="form.name"></div>
+  <div>Category Description: <input name="description" [(ngModel)]="form.description"></div>
+  <button type="submit">Create a Category</button>
+
+</form>
 
 <ul>
-    <li *ngFor="let item of cms.categories | async">
-      {{ item.name }}
+    <li *ngFor="let category of categories">
+      {{ category.id }}
+      {{ category.name }}
+      {{ category.description }}
+      {{ category.created }}
+      ({{ category.numberOfPosts }})
+      <button (click)="onClickDeleteCategory( category.id )">[ X ]</button>
     </li>
   </ul>
+

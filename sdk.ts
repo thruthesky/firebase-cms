@@ -6,6 +6,10 @@ import { HttpClientModule, HttpClient } from '@angular/common/http';
 import { FirebaseCmsService, FIREBASE_CMS_SERVICE_CONFIG } from './providers/firebase-cms.service';
 export * from './providers/firebase-cms.service';
 
+export * from './providers/error';
+export * from './providers/defines';
+
+
 @NgModule({
     imports: [
         CommonModule,

@@ -96,7 +96,8 @@ export class UserComponent {
       })
       .then(re => {
         console.log('login: ', re);
-      });
+      })
+      .catch( e => alert(e.message) );
   }
 
 }

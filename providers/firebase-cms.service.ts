@@ -46,7 +46,8 @@ export class FirebaseCmsService {
 
 
   /// category
-  subscriptionCategories = null;
+  // subscriptionCategories = null;
+  // categories: Array<CATEGORY> = []; // holds all the categories.
 
   ///
   constructor(
@@ -77,7 +78,7 @@ export class FirebaseCmsService {
   initialize(config: FIREBASE_CMS_SERVICE_CONFIG) {
     this.apiUrl = config.apiUrl;
     this.firebase = firebase.initializeApp(config.firebase);
-    
+
 
     console.log('firebaase: ', this.firebase);
 
@@ -301,10 +302,25 @@ export class FirebaseCmsService {
     }
     const esc = encodeURIComponent;
     const query = keys
-      .map(k => esc(k) + '=' + esc(params[k]))
+      .map(k => {
+        if (Array.isArray(params[k])) {
+          const parts = [];
+          for (const key of params[k]) {
+            parts.push( esc(k) + '[]=' + esc(key) );
+          }
+          return parts.join('&');
+        }
+        else {
+          return esc(k) + '=' + esc(params[k]);
+        }
+      })
       .join('&');
     return query;
   }
+
+
+
+
 
 
 
@@ -327,6 +343,7 @@ export class FirebaseCmsService {
 
   categoryCreate(data): Promise<ROUTER_RESPONSE> {
     data['route'] = 'category.create';
+    data['idToken'] = this.idToken;
     return this.route(data);
   }
   categoryGet(id): Promise<ROUTER_RESPONSE> {
@@ -336,31 +353,45 @@ export class FirebaseCmsService {
     };
     return this.route(data);
   }
+  categoryGets(data): Promise<ROUTER_RESPONSE> {
+    data['route'] = 'category.gets';
+    return this.route(data);
+  }
   categoryUpdate(data): Promise<ROUTER_RESPONSE> {
     data['route'] = 'category.create';
     return this.route(data);
+  }
+  categoryDelete(id): Promise<ROUTER_RESPONSE> {
+    const data = {
+      route: 'category.delete',
+      idToken: this.idToken,
+      id: id
+    };
+    return this.route( data );
   }
 
   /**
    * @warning It saves the stream into `this.subscriptionCategories`.
    *          - This means you can only use one categories stream through out the project.
+   * 
+   * @returns
    */
-  subscribeCategoryies() {
-    this.subscriptionCategories = this.db.collection( this.collectionCategories ).onSnapshot(snapshot => {
-      snapshot.docChanges.forEach(function (change) {
-        if (change.type === "added") {
-          console.log("New city: ", change.doc.data());
-        }
-        if (change.type === "modified") {
-          console.log("Modified city: ", change.doc.data());
-        }
-        if (change.type === "removed") {
-          console.log("Removed city: ", change.doc.data());
-        }
-      });
-    }, e => console.error(e));
-  }
-  unsubscribeCategories() {
-    this.subscriptionCategories();
-  }
+  // subscribeCategoryies( callback ) {
+  //   this.subscriptionCategories = this.db.collection( this.collectionCategories ).onSnapshot(snapshot => {
+  //     snapshot.docChanges.forEach(function (change) {
+  //       if (change.type === "added") {
+  //         console.log("New city: ", change.doc.data());
+  //       }
+  //       if (change.type === "modified") {
+  //         console.log("Modified city: ", change.doc.data());
+  //       }
+  //       if (change.type === "removed") {
+  //         console.log("Removed city: ", change.doc.data());
+  //       }
+  //     });
+  //   }, e => console.error(e));
+  // }
+  // unsubscribeCategories() {
+  //   this.subscriptionCategories();
+  // }
 }

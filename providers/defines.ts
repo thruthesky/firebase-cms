@@ -76,4 +76,6 @@ export interface CATEGORY {
     footerOnView?: string;
     numberOfPosts?: number;
     numberOfComment?: number;
+    created: any;
+    updated: any;
 }
