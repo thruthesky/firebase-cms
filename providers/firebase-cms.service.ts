@@ -1,12 +1,15 @@
 import { Injectable } from '@angular/core';
-import { AngularFireAuth } from 'angularfire2/auth';
 import { HttpClient } from '@angular/common/http';
 import * as firebase from 'firebase';
 import 'rxjs/add/operator/toPromise';
 import 'rxjs/add/operator/map';
 
+import { AngularFireAuth } from 'angularfire2/auth';
+import { AngularFirestore, AngularFirestoreCollection } from 'angularfire2/firestore';
+import { Observable } from 'rxjs/Observable';
+
 import { BACKEND_ERROR_OBJECT } from './error';
-import { ROUTER_RESPONSE } from './defines';
+import { ROUTER_RESPONSE, CATEGORY, COLLECTIONS } from './defines';
 
 
 
@@ -35,10 +38,21 @@ export class FirebaseCmsService {
   firebaseApp: firebase.app.App;
   apiUrl: string = null;
   afAuth: AngularFireAuth = null;
+  afs: AngularFirestore = null;
   idToken: string = null;
 
   isLogin = false; // If true, the user has logged in.
 
+
+
+  /// category
+  categoryCollection: AngularFirestoreCollection<CATEGORY>;
+  categories: Observable<CATEGORY[]>;
+
+
+
+
+  ///
   constructor(
     public http: HttpClient
   ) {
@@ -67,6 +81,13 @@ export class FirebaseCmsService {
   }
 
   initializeFirebase() {
+
+    /// post, category
+    this.afs = new AngularFirestore(<any>this.firebaseApp, true);
+    this.categoryCollection = this.afs.collection<CATEGORY>( COLLECTIONS.CATEGORIES );
+
+
+    /// users
     this.afAuth = new AngularFireAuth(<any>this.firebaseApp);
     this.initializeFirebaseAuthentication();
   }
@@ -197,7 +218,7 @@ export class FirebaseCmsService {
   //   console.log("Request Url: ", url);
   // }
 
-  getUrl( data ) {
+  getUrl(data) {
     delete data['debug'];
     const url = this.apiUrl + '?' + this.httpBuildQuery(data);
     return url;
@@ -220,11 +241,11 @@ export class FirebaseCmsService {
       // Promise.throw('apiUrl is empty. It should have backend server URL.');
       // throw new Error('apiUrl is empty. It should have backend server URL.');
     }
-    
+
     let req;
-    if ( this.config.debug || ( data['debug'] !== void 0 && data['debug'] === true) ) {
-      console.log( data.route + " : ", this.getUrl(data));
-      req = this.http.get( this.getUrl(data) );
+    if (this.config.debug || (data['debug'] !== void 0 && data['debug'] === true)) {
+      console.log(data.route + " : ", this.getUrl(data));
+      req = this.http.get(this.getUrl(data));
     }
     else {
       req = this.http.post(this.apiUrl, data);
@@ -289,25 +310,33 @@ export class FirebaseCmsService {
     return this.route({ route: 'system.checkInstall' });
   }
 
-  install( data ): Promise<ROUTER_RESPONSE> {
+  install(data): Promise<ROUTER_RESPONSE> {
     data['route'] = 'system.install';
-    return this.route( data );
+    return this.route(data);
   }
 
 
-  categoryCreate( data ): Promise<ROUTER_RESPONSE> {
+  categoryCreate(data): Promise<ROUTER_RESPONSE> {
     data['route'] = 'category.create';
-    return this.route( data );
+    return this.route(data);
   }
-  categoryGet( id ): Promise<ROUTER_RESPONSE> {
+  categoryGet(id): Promise<ROUTER_RESPONSE> {
     const data = {
       route: 'category.get',
       id: id
     };
-    return this.route( data );
+    return this.route(data);
   }
-  categoryUpdate( data ): Promise<ROUTER_RESPONSE> {
+  categoryUpdate(data): Promise<ROUTER_RESPONSE> {
     data['route'] = 'category.create';
-    return this.route( data );
+    return this.route(data);
+  }
+
+  /**
+   * @warning It saves the stream into `this.categories`. This means you can only use one categories stream through out the project.
+   */
+  categoryObserve() {
+    this.categories = this.categoryCollection.valueChanges();
+    return this.categories;
   }
 }

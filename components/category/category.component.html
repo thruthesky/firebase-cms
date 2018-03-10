@@ -1,3 +1,9 @@
 <h2>Category Management</h2>
 
 Category ID: <input><button>Create a Category</button>
+
+<ul>
+    <li *ngFor="let item of cms.categories | async">
+      {{ item.name }}
+    </li>
+  </ul>
