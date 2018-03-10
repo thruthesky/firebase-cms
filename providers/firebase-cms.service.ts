@@ -21,9 +21,10 @@ export interface FIREBASE_CMS_SERVICE_CONFIG {
   // It will log error with `console.error()`
   disableAlertOnNotInstall?: boolean;
 
-  // If it is set to true, it will log the request URL to `Functions` in console
+  // If it is set to true, it will
+  // 1. Query with GET method to `Functions`
   // Use it for debugging in development.
-  logRequestUrl?: boolean;
+  debug?: boolean;
 }
 
 @Injectable()
@@ -94,8 +95,8 @@ export class FirebaseCmsService {
 
 
   updateIdToken(idToken: string) {
-    console.log('updateIdToken: idToken.length: ', idToken.length);
-    console.log('ID Token: ', idToken);
+    // console.log('updateIdToken: idToken.length: ', idToken.length);
+    // console.log('ID Token: ', idToken);
     this.idToken = idToken;
   }
 
@@ -192,10 +193,14 @@ export class FirebaseCmsService {
   }
 
 
-  logUrl(data) {
+  // logUrl(data) {
+  //   console.log("Request Url: ", url);
+  // }
+
+  getUrl( data ) {
     delete data['debug'];
     const url = this.apiUrl + '?' + this.httpBuildQuery(data);
-    console.log("Request Url: ", url);
+    return url;
   }
 
   /**
@@ -208,19 +213,24 @@ export class FirebaseCmsService {
    * @param data request data
    */
   route(data): Promise<ROUTER_RESPONSE> {
+
+
     if (!this.apiUrl) {
       return Promise.reject(new Error('apiUrl is empty. It should have backend server URL.'));
       // Promise.throw('apiUrl is empty. It should have backend server URL.');
       // throw new Error('apiUrl is empty. It should have backend server URL.');
     }
-    if (this.config.logRequestUrl) {
-      this.logUrl(data);
+    
+    let req;
+    if ( this.config.debug || ( data['debug'] !== void 0 && data['debug'] === true) ) {
+      console.log( data.route + " : ", this.getUrl(data));
+      req = this.http.get( this.getUrl(data) );
     }
-    if (data['debug'] !== void 0 && data['debug'] === true) {
-      this.logUrl(data);
+    else {
+      req = this.http.post(this.apiUrl, data);
     }
 
-    return this.http.post(this.apiUrl, data).toPromise()
+    return req.toPromise()
       .then((re: ROUTER_RESPONSE) => {
         if (re.code === void 0) { /// No response from backend. Maybe Javascript error / Network error.
           throw { code: -1, message: 'Failed to get response from server' };
@@ -284,4 +294,20 @@ export class FirebaseCmsService {
     return this.route( data );
   }
 
+
+  categoryCreate( data ): Promise<ROUTER_RESPONSE> {
+    data['route'] = 'category.create';
+    return this.route( data );
+  }
+  categoryGet( id ): Promise<ROUTER_RESPONSE> {
+    const data = {
+      route: 'category.get',
+      id: id
+    };
+    return this.route( data );
+  }
+  categoryUpdate( data ): Promise<ROUTER_RESPONSE> {
+    data['route'] = 'category.create';
+    return this.route( data );
+  }
 }

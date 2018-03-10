@@ -39,7 +39,7 @@ export class UnitTestService {
 
         if (params && params.length) {
             for (const p of params) {
-                console.log(p);
+                console.error(p);
             }
         }
     }
@@ -54,6 +54,7 @@ export class UnitTestService {
     runTests() {
         this.versionTests();
         this.userTests();
+        this.categoryTests();
     }
 
     versionTests() {
@@ -114,20 +115,47 @@ export class UnitTestService {
                 this.success('Expect login success: ', 'uid:' + user);
                 return user.getIdToken();
             })
-            .then( idToken => {
+            .then(idToken => {
                 this.cms.idToken = idToken;
             })
-            .then( () => {
-                return this.cms.profileUpdate({ address: 'Manila'});
+            .then(() => {
+                return this.cms.profileUpdate({ address: 'Manila' });
             })
-            .then( re => {
-                this.test( re.code === 0, 'Expect success on profile update', re);
+            .then(re => {
+                this.test(re.code === 0, 'Expect success on profile update', re);
                 return this.cms.getUserData();
             })
-            .then( re => {
-                this.test( re.code === 0, 'Expect success on get user data', re);
+            .then(re => {
+                this.test(re.code === 0, 'Expect success on get user data', re);
             })
             .catch(e => this.failure('Expect success: ', e.code, e.message));
+    }
+
+    async categoryTests() {
+
+        this.cms.categoryCreate({ name: 'test' }).
+            then(re => {
+                this.failure("Expect erorr since you are not admin.");
+            })
+            .catch(e => {
+                console.log('-------------- e: ', e.code, E.PERMISSION_DENIED_ADMIN_ONLY);
+                this.test(e.code === E.PERMISSION_DENIED_ADMIN_ONLY, "Only admin can create a category.");
+            });
+        this.cms.categoryUpdate({ name: 'test' }).
+            then(re => {
+                this.failure("Expect erorr since you are not admin.");
+            })
+            .catch(e => {
+                this.test(e.code === E.PERMISSION_DENIED_ADMIN_ONLY, "Only admin can update a category.");
+            });
+        this.cms.categoryGet({ name: 'test' }).
+            then(re => {
+                this.failure("Expect erorr since you are not admin.");
+            })
+            .catch(e => {
+                console.log("get category: ", e);
+                this.test(e.code === E.DOCUMENT_ID_DOES_NOT_EXISTS_FOR_GET, "No document ID. Docuemnt ID doe snot exists.");
+            });
     }
 
 }

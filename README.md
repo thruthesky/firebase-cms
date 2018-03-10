@@ -46,7 +46,7 @@ export class AppModule {
 
 * If you want to publish update version of `Firebase CMS` as node module, please follow the instructions of [Ng-Packagr](https://github.com/dherges/ng-packagr)
 
- * Update below in `package.json`
+ * Update below in parent project's `package.json`. ( Not in firebase-cms/package.json )
 
 ````
 {
@@ -64,9 +64,11 @@ export class AppModule {
 }
 ````
 
- * save below in `public_api.ts`
+ * save below modules you want to export in `public_api.ts`
 ````
-export * from './src/app/modules/firebase-cms/firebase-cms.module';
+export * from './src/app/modules/firebase-cms/sdk';
+export * from './src/app/modules/firebase-cms/components';
+export * from './src/app/modules/firebase-cms/unit-tests';
 ````
 
  * compile with `npm run pack`
