@@ -50,7 +50,7 @@
   </div>
 
   <div *ngIf=" cms.isLogin ">
-    <h2>Hello {{ cms.userDisplayName }}!</h2>
+    <h2 class="m-0 p-0">Hello {{ cms.userDisplayName }}!</h2>
     <div>
       <button (click)=" show.profile = true ">Update Profile</button>
       <button (click)=" onClickLogout() ">Logout</button>

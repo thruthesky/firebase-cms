@@ -1,21 +1,31 @@
-<h2>Category Management</h2>
-<form (ngSubmit)=" onCategoryCreateFormSubmit( $event ) ">
+<h2 class="p-0 m-0">Category Management
+    <span class="pointer" style="color: blue" (click)=" open = true " *ngIf=" ! open ">[ Open ]</span>
+    <span class="pointer" style="color: blue" (click)=" open = false " *ngIf=" open ">[ Close ]</span>
+</h2>
 
-  <div>Category ID: <input name="id" [(ngModel)]="form.id"></div>
-  <div>Category Name: <input name="name" [(ngModel)]="form.name"></div>
-  <div>Category Description: <input name="description" [(ngModel)]="form.description"></div>
-  <button type="submit">Create a Category</button>
+<section class="content" *ngIf="open">
 
-</form>
-
-<ul>
-    <li *ngFor="let category of categories">
-      {{ category.id }}
-      {{ category.name }}
-      {{ category.description }}
-      {{ category.created }}
-      ({{ category.numberOfPosts }})
-      <button (click)="onClickDeleteCategory( category.id )">[ X ]</button>
-    </li>
-  </ul>
-
+    <form (ngSubmit)=" onCategoryCreateFormSubmit( $event ) ">
+        <div>Category ID:
+          <input name="id" [(ngModel)]="form.id">
+        </div>
+        <div>Category Name:
+          <input name="name" [(ngModel)]="form.name">
+        </div>
+        <div>Category Description:
+          <input name="description" [(ngModel)]="form.description">
+        </div>
+        <button type="submit" *ngIf=" ! inCreating ">Create a Category</button>
+        <span style="background-color: red; color: white;" *ngIf=" inCreating ">Loading...</span>
+      
+      </form>
+      
+      <ul>
+        <li *ngFor="let category of categories">
+          {{ category.id }} {{ category.name }} {{ category.description }} {{ category.created }} ({{ category.numberOfPosts }})
+          <button (click)="onClickDeleteCategory( category )" *ngIf=" ! category['inDeleting'] ">[ X ]</button>
+          <span style="background-color: red; color: white;" *ngIf=" category['inDeleting'] ">Deleting...</span>
+        </li>
+      </ul>
+      
+</section>
