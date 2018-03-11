@@ -1,0 +1,41 @@
+<h2 class="p-0 m-0">Forum (Post)
+  <span class="pointer" style="color: blue" (click)=" open = true " *ngIf=" ! open ">[ Open ]</span>
+  <span class="pointer" style="color: blue" (click)=" open = false " *ngIf=" open ">[ Close ]</span>
+</h2>
+
+<section class="content" *ngIf="open">
+
+  {{ categories | json }}
+  <hr>
+
+  <button (click)=" showCreateForm() ">Create</button>
+  <section *ngIf=" show.create ">
+
+    <form (ngSubmit)=" onPostCreateFormSubmit( $event ) ">
+      <div>
+        Select Category :
+        <select name="categoryId" [(ngModel)]="post.categoryId" *ngIf="categoryIds">
+          <option *ngFor=" let id of categoryIds " value="{{ id  }}">{{ categories[id].name ? categories[id].name : id }}</option>
+        </select>
+
+        <div *ngIf="subcategories">
+          Select Sub Category : {{ subcategories | json }}
+        </div>
+
+      </div>
+      <div>
+        Tags
+      </div>
+      <div>Title:
+        <input name="name" [(ngModel)]="post.title">
+      </div>
+      <div>Content:
+        <input name="description" [(ngModel)]="post.content">
+      </div>
+      <button type="submit" *ngIf=" ! inCreating ">Create a Category</button>
+      <span style="background-color: red; color: white;" *ngIf=" loader.creating ">Loading...</span>
+
+    </form>
+  </section>
+  post form post list
+</section>

@@ -1,31 +1,68 @@
 <h2 class="p-0 m-0">Category Management
-    <span class="pointer" style="color: blue" (click)=" open = true " *ngIf=" ! open ">[ Open ]</span>
-    <span class="pointer" style="color: blue" (click)=" open = false " *ngIf=" open ">[ Close ]</span>
+  <span class="pointer" style="color: blue" (click)=" show.content = true " *ngIf=" ! show.content ">[ Open ]</span>
+
+  <ng-container>
+      <span class="pointer" style="color: blue" (click)=" show.createForm = true " *ngIf=" show.content ">[ Create Category ]</span>
+      <span class="pointer" style="color: blue" (click)=" show.content = false " *ngIf=" show.content ">[ Close ]</span>
+  </ng-container>
 </h2>
 
-<section class="content" *ngIf="open">
+<section class="content" *ngIf="show.content">
 
-    <form (ngSubmit)=" onCategoryCreateFormSubmit( $event ) ">
-        <div>Category ID:
-          <input name="id" [(ngModel)]="form.id">
-        </div>
-        <div>Category Name:
-          <input name="name" [(ngModel)]="form.name">
-        </div>
-        <div>Category Description:
-          <input name="description" [(ngModel)]="form.description">
-        </div>
-        <button type="submit" *ngIf=" ! inCreating ">Create a Category</button>
-        <span style="background-color: red; color: white;" *ngIf=" inCreating ">Loading...</span>
-      
-      </form>
-      
-      <ul>
-        <li *ngFor="let category of categories">
-          {{ category.id }} {{ category.name }} {{ category.description }} {{ category.created }} ({{ category.numberOfPosts }})
-          <button (click)="onClickDeleteCategory( category )" *ngIf=" ! category['inDeleting'] ">[ X ]</button>
-          <span style="background-color: red; color: white;" *ngIf=" category['inDeleting'] ">Deleting...</span>
-        </li>
-      </ul>
-      
+  <form (ngSubmit)=" onCategoryCreateFormSubmit( $event ) " *ngIf=" show.createForm ">
+    <div>Category ID:
+      <input name="id" [(ngModel)]="form.id">
+    </div>
+    <div>Category Name:
+      <input name="name" [(ngModel)]="form.name">
+    </div>
+    <div>Category Description:
+      <input name="description" [(ngModel)]="form.description">
+    </div>
+    <div>Subcategories
+      <input name="subcategories" size="64" [(ngModel)]="form.subcategories">
+      <div>You can input many subcategories seprate by comma. white spaces between comma will be ignored.</div>
+    </div>
+    <div>numberOfPostsPerPage:
+      <input name="numberOfPostsPerPage" size="3" [(ngModel)]="form.numberOfPostsPerPage">
+    </div>
+    <button type="submit" *ngIf=" ! loader.create ">Create a Category</button>
+    <button type="submit" (click)=" show.createForm = false ">Cancel</button>
+    <span style="background-color: red; color: white;" *ngIf=" loader.create ">Loading...</span>
+  </form>
+
+
+  <form (ngSubmit)=" onCategoryEditFormSubmit( $event ) " *ngIf=" show.editForm ">
+    <div>Edit ID: {{ form.id }}</div>
+    <div>Edit Category Name:
+      <input name="name" [(ngModel)]="form.name">
+    </div>
+    <div>Edit Category Description:
+      <input name="description" [(ngModel)]="form.description">
+    </div>
+    <div>Subcategories
+      <input name="subcategories" size="64" [(ngModel)]="form.subcategories">
+      <div>You can input many subcategories seprate by comma. white spaces between comma will be ignored.</div>
+    </div>
+    <div>Edit numberOfPostsPerPage:
+      <input name="numberOfPostsPerPage" size="3" [(ngModel)]="form.numberOfPostsPerPage">
+    </div>
+    <div *ngIf=" ! loader.edit ">
+    <button type="submit">Edit Category</button>
+    <button type="submit" (click)=" onCancelEditCategory() ">Cancel</button>
+  </div>
+    <span style="background-color: red; color: white;" *ngIf=" loader.edit ">Loading...</span>
+  </form>
+
+
+
+  <ul>
+    <li *ngFor="let category of categories">
+      {{ category.id }} {{ category.name }} {{ category.description }} {{ category.created }} ({{ category.numberOfPosts }})
+      <button (click)="onClickCategoryEdit( category )" *ngIf=" ! category['inDeleting'] ">Edit</button>
+      <button (click)="onClickDeleteCategory( category )" *ngIf=" ! category['inDeleting'] ">[ X ]</button>
+      <span style="background-color: red; color: white;" *ngIf=" category['inDeleting'] ">Deleting...</span>
+    </li>
+  </ul>
+
 </section>

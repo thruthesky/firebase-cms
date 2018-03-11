@@ -9,7 +9,7 @@ import 'rxjs/add/operator/map';
 import { Observable } from 'rxjs/Observable';
 
 import { BACKEND_ERROR_OBJECT } from './error';
-import { ROUTER_RESPONSE, CATEGORY, COLLECTIONS } from './defines';
+import { ROUTER_RESPONSE, CATEGORY, COLLECTIONS, POST } from './defines';
 export const COLLECTION_PREFIX = 'x-';
 
 
@@ -29,6 +29,11 @@ export interface FIREBASE_CMS_SERVICE_CONFIG {
   // Use it for debugging in development.
   debug?: boolean;
 }
+
+export interface ROUTER_RESPONSE_CATEGORIES extends ROUTER_RESPONSE {
+  data?: Array<CATEGORY>;
+}
+
 
 @Injectable()
 export class FirebaseCmsService {
@@ -341,9 +346,13 @@ export class FirebaseCmsService {
   }
 
 
-  categoryCreate(data): Promise<ROUTER_RESPONSE> {
+  categoryCreate(data: CATEGORY): Promise<ROUTER_RESPONSE> {
     data['route'] = 'category.create';
     data['idToken'] = this.idToken;
+
+    if ( data.subcategories ) {
+      data.subcategories = data.subcategories.split(',').map( v => v.trim()).join(',');
+    }
     return this.route(data);
   }
   categoryGet(id): Promise<ROUTER_RESPONSE> {
@@ -353,12 +362,13 @@ export class FirebaseCmsService {
     };
     return this.route(data);
   }
-  categoryGets(data): Promise<ROUTER_RESPONSE> {
+  categoryGets(data): Promise<ROUTER_RESPONSE_CATEGORIES> {
     data['route'] = 'category.gets';
     return this.route(data);
   }
-  categoryUpdate(data): Promise<ROUTER_RESPONSE> {
-    data['route'] = 'category.create';
+  categoryEdit(data): Promise<ROUTER_RESPONSE> {
+    data['route'] = 'category.update';
+    data['idToken'] = this.idToken;
     return this.route(data);
   }
   categoryDelete(id): Promise<ROUTER_RESPONSE> {
@@ -370,28 +380,8 @@ export class FirebaseCmsService {
     return this.route( data );
   }
 
-  /**
-   * @warning It saves the stream into `this.subscriptionCategories`.
-   *          - This means you can only use one categories stream through out the project.
-   * 
-   * @returns
-   */
-  // subscribeCategoryies( callback ) {
-  //   this.subscriptionCategories = this.db.collection( this.collectionCategories ).onSnapshot(snapshot => {
-  //     snapshot.docChanges.forEach(function (change) {
-  //       if (change.type === "added") {
-  //         console.log("New city: ", change.doc.data());
-  //       }
-  //       if (change.type === "modified") {
-  //         console.log("Modified city: ", change.doc.data());
-  //       }
-  //       if (change.type === "removed") {
-  //         console.log("Removed city: ", change.doc.data());
-  //       }
-  //     });
-  //   }, e => console.error(e));
-  // }
-  // unsubscribeCategories() {
-  //   this.subscriptionCategories();
-  // }
+  
+  postCreate( post: POST ): Promise<ROUTER_RESPONSE> {
+    return this.route( post );
+  }
 }

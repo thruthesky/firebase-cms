@@ -13,12 +13,15 @@ export * from './components/user/user.component';
 import { CategoryComponent } from './components/category/category.component';
 export * from './components/category/category.component';
 
+import { PostComponent } from './components/post/post.component';
+export * from './components/post/post.component';
 
 @NgModule({
     declarations: [
         InstallComponent,
         UserComponent,
-        CategoryComponent
+        CategoryComponent,
+        PostComponent
     ],
     imports: [
         CommonModule,
@@ -28,7 +31,8 @@ export * from './components/category/category.component';
     exports: [
         InstallComponent,
         UserComponent,
-        CategoryComponent
+        CategoryComponent,
+        PostComponent
     ]
 })
 export class FirebaseCmsComponentModule {

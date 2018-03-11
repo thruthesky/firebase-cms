@@ -7,7 +7,7 @@
  *
  */
 import { Injectable } from '@angular/core';
-import * as _ from 'lodash';
+import { Library as _ } from './../providers/library';
 import * as E from './../providers/error';
 import { FirebaseCmsService } from './../sdk';
 
@@ -131,9 +131,10 @@ export class UnitTestService {
             .catch(e => this.failure('Expect success: ', e.code, e.message));
     }
 
+
     async categoryTests() {
 
-        this.cms.categoryCreate({ name: 'test' }).
+        this.cms.categoryCreate(<any>{ name: 'test' }).
             then(re => {
                 this.failure("Expect erorr since you are not admin.");
             })
@@ -141,7 +142,7 @@ export class UnitTestService {
                 console.log('-------------- e: ', e.code, E.PERMISSION_DENIED_ADMIN_ONLY);
                 this.test(e.code === E.PERMISSION_DENIED_ADMIN_ONLY, "Only admin can create a category.");
             });
-        this.cms.categoryUpdate({ name: 'test' }).
+        this.cms.categoryEdit(<any>{ name: 'test' }).
             then(re => {
                 this.failure("Expect erorr since you are not admin.");
             })
